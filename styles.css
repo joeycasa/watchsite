@@ -80,16 +80,17 @@ body {
     text-transform: uppercase;
     color: var(--color-text-muted);
     font-weight: 300;
-    max-height: 0;
-    overflow: hidden;
     opacity: 0;
-    transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+    visibility: hidden;
+    height: 0;
+    transition: opacity 0.3s ease, visibility 0.3s ease, height 0.3s ease;
     animation: fadeInUp 1s ease-out 0.2s both;
 }
 
 .header.header-top .tagline {
-    max-height: 50px;
     opacity: 1;
+    visibility: visible;
+    height: auto;
 }
 
 /* Gallery Grid */
