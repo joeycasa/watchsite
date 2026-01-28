@@ -2,6 +2,8 @@
 
 A luxury watch gallery website designed for GitHub Pages. Features a responsive grid layout with image carousels and a lightbox viewer.
 
+https://joeycasa.github.io/watchsite/
+
 ## Features
 
 - 📱 **Responsive Design** - Works beautifully on desktop, tablet, and mobile
