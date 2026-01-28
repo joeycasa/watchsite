@@ -248,3 +248,13 @@ function updateLightboxImage() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initGallery);
+
+// Header scroll effect
+window.addEventListener('scroll', () => {
+    const header = document.querySelector('.header');
+    if (window.scrollY > 50) {
+        header.classList.remove('header-top');
+    } else {
+        header.classList.add('header-top');
+    }
+});
