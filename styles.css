@@ -48,24 +48,11 @@ body {
     top: 0;
     z-index: 100;
     backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-}
-
-.header .container {
-    min-height: 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    transition: min-height 0.3s ease;
 }
 
 .header.header-top {
     padding: var(--spacing-lg) 0;
     background: linear-gradient(180deg, var(--color-bg) 0%, transparent 100%);
-}
-
-.header.header-top .container {
-    min-height: 120px;
 }
 
 .logo {
@@ -76,13 +63,12 @@ body {
     color: var(--color-accent);
     text-align: center;
     margin: 0;
-    transition: all 0.3s ease;
     white-space: nowrap;
-    position: relative;
 }
 
 .header.header-top .logo {
     font-size: 3rem;
+    margin-bottom: var(--spacing-xs);
 }
 
 .tagline {
@@ -92,17 +78,11 @@ body {
     text-transform: uppercase;
     color: var(--color-text-muted);
     font-weight: 300;
-    line-height: 1.5;
-    opacity: 0;
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    right: 0;
-    transition: opacity 0.2s ease;
+    display: none;
 }
 
 .header.header-top .tagline {
-    opacity: 1;
+    display: block;
 }
 
 /* Gallery Grid */
