@@ -48,6 +48,7 @@ body {
     top: 0;
     z-index: 100;
     backdrop-filter: blur(10px);
+    transition: padding 0.3s ease, background 0.3s ease;
 }
 
 .header.header-top {
@@ -64,11 +65,19 @@ body {
     text-align: center;
     margin: 0;
     white-space: nowrap;
+    transition: font-size 0.3s ease, margin 0.3s ease, opacity 0.15s ease;
+    opacity: 1;
 }
 
 .header.header-top .logo {
     font-size: 3rem;
     margin-bottom: var(--spacing-xs);
+}
+
+/* Hide content during transition to prevent glitch */
+.header.header-transitioning .logo,
+.header.header-transitioning .tagline {
+    opacity: 0;
 }
 
 .tagline {
@@ -79,6 +88,8 @@ body {
     color: var(--color-text-muted);
     font-weight: 300;
     display: none;
+    transition: opacity 0.15s ease;
+    opacity: 1;
 }
 
 .header.header-top .tagline {

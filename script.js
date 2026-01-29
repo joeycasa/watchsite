@@ -249,12 +249,35 @@ function updateLightboxImage() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initGallery);
 
-// Header scroll effect
+// Header scroll effect with smooth transition
+let scrollTimeout;
+let isTransitioning = false;
+
 window.addEventListener('scroll', () => {
     const header = document.querySelector('.header');
-    if (window.scrollY > 50) {
-        header.classList.remove('header-top');
-    } else {
-        header.classList.add('header-top');
+    const scrollY = window.scrollY;
+    
+    // Clear any existing timeout
+    clearTimeout(scrollTimeout);
+    
+    // Add transitioning class to hide content during transition
+    if (!isTransitioning) {
+        header.classList.add('header-transitioning');
+        isTransitioning = true;
     }
+    
+    // After scroll stops for 50ms, update the state
+    scrollTimeout = setTimeout(() => {
+        if (scrollY > 50) {
+            header.classList.remove('header-top');
+        } else {
+            header.classList.add('header-top');
+        }
+        
+        // Remove transitioning class after state is set
+        setTimeout(() => {
+            header.classList.remove('header-transitioning');
+            isTransitioning = false;
+        }, 50);
+    }, 50);
 });
