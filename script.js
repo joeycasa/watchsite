@@ -250,15 +250,16 @@ function updateLightboxImage() {
 document.addEventListener('DOMContentLoaded', initGallery);
 
 // ───────────────────────────────────────────────
-// Header scroll effect — lag-free, single-threshold, snap animation (with no middle jitter)
+// Robust header snap effect
 // ───────────────────────────────────────────────
 
 const header = document.querySelector('.header');
 const gallery = document.querySelector('.gallery-container');
 
-let rafScheduled = false;
 let lastScrollY = window.scrollY || 0;
-let isSnapping = false; // prevent re-trigger during snap
+let isSnapping = false;
+let snapTarget = null; // target scroll position during snapping
+let rafScheduled = false;
 
 function getGalleryTop() {
     return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
@@ -266,55 +267,63 @@ function getGalleryTop() {
 
 function updateHeader() {
     rafScheduled = false;
-
-    if (isSnapping) return;
-
     const scrollY = window.scrollY;
-    const direction = scrollY > lastScrollY ? 'down' : 'up';
+    const scrollDown = scrollY > lastScrollY;
     lastScrollY = scrollY;
 
+    const headerHeight = header.offsetHeight;
     const galleryTop = getGalleryTop();
-    const headerHeight = header.offsetHeight; // approximate expanded height for calculation
+    const threshold = galleryTop - headerHeight;
 
-    const threshold = galleryTop - headerHeight; // threshold is top of gallery minus header (adjust if needed)
+    const headerOpen = header.classList.contains('header-top');
 
+    // Determine desired state
     const shouldBeOpen = scrollY < threshold;
 
-    const isCurrentlyOpen = header.classList.contains('header-top');
+    // If header state needs to change
+    if (shouldBeOpen !== headerOpen) {
 
-    if (shouldBeOpen !== isCurrentlyOpen) {
-        isSnapping = true;
-        header.classList.add('header-transitioning');
+        // Prevent multiple snaps at once
+        if (!isSnapping) {
+            isSnapping = true;
+            header.classList.add('header-transitioning');
 
-        if (shouldBeOpen) {
-            header.classList.add('header-top');
-            // Snap to top of page (open header)
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        } else {
-            header.classList.remove('header-top');
-            // Wait a tiny bit for class change, then snap to gallery top under collapsed header
-            setTimeout(() => {
-                const collapsedHeaderHeight = header.offsetHeight;
-                const target = galleryTop - collapsedHeaderHeight;
-                window.scrollTo({
-                    top: target,
-                    behavior: 'smooth'
-                });
-            }, 50); // small delay to let class apply
+            if (shouldBeOpen) {
+                // Open header
+                header.classList.add('header-top');
+                snapTarget = 0;
+            } else {
+                // Collapse header
+                header.classList.remove('header-top');
+                snapTarget = galleryTop - header.offsetHeight;
+            }
+
+            // Smooth scroll to snapTarget
+            window.scrollTo({ top: snapTarget, behavior: 'smooth' });
         }
+    }
 
-        // Clean up after transition + snap
-        setTimeout(() => {
-            header.classList.remove('header-transitioning');
+    // If currently snapping, check if scroll overshot target
+    if (isSnapping) {
+        if ((scrollDown && scrollY >= snapTarget) || (!scrollDown && scrollY <= snapTarget)) {
+            // Snap complete
             isSnapping = false;
-        }, 400); // adjust to match your transition + snap time (300–500 ms)
+            snapTarget = null;
+            header.classList.remove('header-transitioning');
+        }
     }
 }
 
+// Scroll handler using requestAnimationFrame
 window.addEventListener('scroll', () => {
+    if (!rafScheduled) {
+        rafScheduled = true;
+        requestAnimationFrame(updateHeader);
+    }
+});
+
+// Optional: handle window resize (header height may change)
+window.addEventListener('resize', () => {
     if (!rafScheduled) {
         rafScheduled = true;
         requestAnimationFrame(updateHeader);
