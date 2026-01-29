@@ -256,15 +256,15 @@ window.addEventListener('scroll', () => {
     const header = document.querySelector('.header');
     const scrollY = window.scrollY;
     
-    // Determine the current state with a buffer zone to prevent flickering
+    // Determine the current state with a larger buffer zone to prevent any glitching
     // Use different thresholds for scrolling up vs down (hysteresis)
     let currentState;
     if (lastState === 'top') {
-        // If we were at top, need to scroll past 70px to collapse
-        currentState = scrollY > 70 ? 'collapsed' : 'top';
+        // If we were at top, need to scroll past 100px to collapse
+        currentState = scrollY > 100 ? 'collapsed' : 'top';
     } else {
-        // If we were collapsed, need to scroll above 30px to expand
-        currentState = scrollY < 30 ? 'top' : 'collapsed';
+        // If we were collapsed, need to scroll above 20px to expand
+        currentState = scrollY < 20 ? 'top' : 'collapsed';
     }
     
     // Only do something if state actually changed
