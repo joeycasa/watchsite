@@ -250,34 +250,40 @@ function updateLightboxImage() {
 document.addEventListener('DOMContentLoaded', initGallery);
 
 // Header scroll effect with smooth transition
-let scrollTimeout;
-let isTransitioning = false;
+let lastState = null; // Track the last state to detect actual changes
 
 window.addEventListener('scroll', () => {
     const header = document.querySelector('.header');
     const scrollY = window.scrollY;
     
-    // Clear any existing timeout
-    clearTimeout(scrollTimeout);
-    
-    // Add transitioning class to hide content during transition
-    if (!isTransitioning) {
-        header.classList.add('header-transitioning');
-        isTransitioning = true;
+    // Determine the current state with a buffer zone to prevent flickering
+    // Use different thresholds for scrolling up vs down (hysteresis)
+    let currentState;
+    if (lastState === 'top') {
+        // If we were at top, need to scroll past 70px to collapse
+        currentState = scrollY > 70 ? 'collapsed' : 'top';
+    } else {
+        // If we were collapsed, need to scroll above 30px to expand
+        currentState = scrollY < 30 ? 'top' : 'collapsed';
     }
     
-    // After scroll stops for 50ms, update the state
-    scrollTimeout = setTimeout(() => {
-        if (scrollY > 50) {
-            header.classList.remove('header-top');
-        } else {
+    // Only do something if state actually changed
+    if (currentState !== lastState) {
+        // Add transitioning class only during state change
+        header.classList.add('header-transitioning');
+        
+        // Update the header state
+        if (currentState === 'top') {
             header.classList.add('header-top');
+        } else {
+            header.classList.remove('header-top');
         }
         
-        // Remove transitioning class after state is set
+        // Remove transitioning class after transition completes
         setTimeout(() => {
             header.classList.remove('header-transitioning');
-            isTransitioning = false;
-        }, 50);
-    }, 50);
+        }, 300);
+        
+        lastState = currentState;
+    }
 });
