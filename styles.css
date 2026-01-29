@@ -51,6 +51,13 @@ body {
     transition: padding 0.3s ease, background 0.3s ease;
 }
 
+/* Add collapsed class for mobile */
+.header-collapsed {
+    padding: var(--spacing-sm) 0;
+    background: rgba(10, 10, 10, 0.95);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
 .header.header-top {
     padding: var(--spacing-lg) 0;
     background: linear-gradient(180deg, var(--color-bg) 0%, transparent 100%);

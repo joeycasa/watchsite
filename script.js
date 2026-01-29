@@ -250,7 +250,7 @@ function updateLightboxImage() {
 document.addEventListener('DOMContentLoaded', initGallery);
 
 // ───────────────────────────────────────────────
-// Mobile-safe header snap
+// Header snap — Desktop snaps, Mobile free-scroll
 // ───────────────────────────────────────────────
 
 const header = document.querySelector('.header');
@@ -259,12 +259,12 @@ const gallery = document.querySelector('.gallery-container');
 let lastScrollY = window.scrollY || 0;
 let isSnapping = false;
 
+// Detect mobile devices
+const isMobile = /iP(ad|hone|ipod)|Android/i.test(navigator.userAgent);
+
 function getGalleryTop() {
   return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
 }
-
-// Detect mobile Safari / mobile browsers
-const isMobile = /iP(ad|hone|ipod)|Android/i.test(navigator.userAgent);
 
 function updateHeader() {
   const scrollY = window.scrollY;
@@ -275,32 +275,35 @@ function updateHeader() {
   const headerOpen = header.classList.contains('header-top');
   const shouldBeOpen = scrollY < threshold;
 
-  if (shouldBeOpen !== headerOpen && !isSnapping) {
-    isSnapping = true;
-    header.classList.add('header-transitioning');
-
+  if (isMobile) {
+    // ── MOBILE: just toggle classes, no snapping ──
     if (shouldBeOpen) {
       header.classList.add('header-top');
-      if (!isMobile) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        // Instant snap on mobile
-        window.scrollTo({ top: 0, behavior: 'auto' });
-      }
+      header.classList.remove('header-collapsed');
     } else {
       header.classList.remove('header-top');
-      const target = galleryTop - header.offsetHeight;
-      if (!isMobile) {
-        window.scrollTo({ top: target, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: target, behavior: 'auto' });
-      }
+      header.classList.add('header-collapsed');
     }
+  } else {
+    // ── DESKTOP: snapping behavior ──
+    if (shouldBeOpen !== headerOpen && !isSnapping) {
+      isSnapping = true;
+      header.classList.add('header-transitioning');
 
-    setTimeout(() => {
-      header.classList.remove('header-transitioning');
-      isSnapping = false;
-    }, 400);
+      if (shouldBeOpen) {
+        header.classList.add('header-top');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        header.classList.remove('header-top');
+        const target = galleryTop - header.offsetHeight;
+        window.scrollTo({ top: target, behavior: 'smooth' });
+      }
+
+      setTimeout(() => {
+        header.classList.remove('header-transitioning');
+        isSnapping = false;
+      }, 400); // match your CSS transition duration
+    }
   }
 
   lastScrollY = scrollY;
