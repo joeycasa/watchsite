@@ -250,82 +250,69 @@ function updateLightboxImage() {
 document.addEventListener('DOMContentLoaded', initGallery);
 
 // ───────────────────────────────────────────────
-// Robust header snap effect
+// Header scroll effect — mobile-friendly fix
 // ───────────────────────────────────────────────
 
 const header = document.querySelector('.header');
 const gallery = document.querySelector('.gallery-container');
 
+let rafScheduled = false;
 let lastScrollY = window.scrollY || 0;
 let isSnapping = false;
-let snapTarget = null; // target scroll position during snapping
-let rafScheduled = false;
 
 function getGalleryTop() {
-    return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
+  return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
 }
 
 function updateHeader() {
-    rafScheduled = false;
-    const scrollY = window.scrollY;
-    const scrollDown = scrollY > lastScrollY;
-    lastScrollY = scrollY;
+  rafScheduled = false;
 
-    const headerHeight = header.offsetHeight;
-    const galleryTop = getGalleryTop();
-    const threshold = galleryTop - headerHeight;
+  if (isSnapping) return;
 
-    const headerOpen = header.classList.contains('header-top');
+  const scrollY = window.scrollY;
+  lastScrollY = scrollY;
 
-    // Determine desired state
-    const shouldBeOpen = scrollY < threshold;
+  const galleryTop = getGalleryTop();
+  const headerHeight = header.offsetHeight;
 
-    // If header state needs to change
-    if (shouldBeOpen !== headerOpen) {
+  const threshold = galleryTop - headerHeight;
 
-        // Prevent multiple snaps at once
-        if (!isSnapping) {
-            isSnapping = true;
-            header.classList.add('header-transitioning');
+  const shouldBeOpen = scrollY < threshold;
+  const isCurrentlyOpen = header.classList.contains('header-top');
 
-            if (shouldBeOpen) {
-                // Open header
-                header.classList.add('header-top');
-                snapTarget = 0;
-            } else {
-                // Collapse header
-                header.classList.remove('header-top');
-                snapTarget = galleryTop - header.offsetHeight;
-            }
+  if (shouldBeOpen !== isCurrentlyOpen) {
+    isSnapping = true;
+    header.classList.add('header-transitioning');
 
-            // Smooth scroll to snapTarget
-            window.scrollTo({ top: snapTarget, behavior: 'smooth' });
-        }
+    if (shouldBeOpen) {
+      header.classList.add('header-top');
+      // Snap to top safely
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      header.classList.remove('header-top');
+      // Snap to gallery under collapsed header
+      const collapsedHeaderHeight = header.offsetHeight;
+      const target = galleryTop - collapsedHeaderHeight;
+      window.scrollTo({ top: target, behavior: 'smooth' });
     }
 
-    // If currently snapping, check if scroll overshot target
-    if (isSnapping) {
-        if ((scrollDown && scrollY >= snapTarget) || (!scrollDown && scrollY <= snapTarget)) {
-            // Snap complete
-            isSnapping = false;
-            snapTarget = null;
-            header.classList.remove('header-transitioning');
-        }
-    }
+    // Clean up after smooth scroll
+    setTimeout(() => {
+      header.classList.remove('header-transitioning');
+      isSnapping = false;
+    }, 400); // match your CSS transition
+  }
 }
 
-// Scroll handler using requestAnimationFrame
+// Scroll handler
 window.addEventListener('scroll', () => {
-    if (!rafScheduled) {
-        rafScheduled = true;
-        requestAnimationFrame(updateHeader);
-    }
+  if (!rafScheduled) {
+    rafScheduled = true;
+    requestAnimationFrame(updateHeader);
+  }
 });
 
-// Optional: handle window resize (header height may change)
+// Resize handler (optional)
 window.addEventListener('resize', () => {
-    if (!rafScheduled) {
-        rafScheduled = true;
-        requestAnimationFrame(updateHeader);
-    }
+  requestAnimationFrame(updateHeader);
 });
