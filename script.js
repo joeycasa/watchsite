@@ -249,41 +249,74 @@ function updateLightboxImage() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initGallery);
 
-// Header scroll effect with smooth transition
-let lastState = null; // Track the last state to detect actual changes
+// ───────────────────────────────────────────────
+// Header scroll effect — lag-free, single-threshold, snap animation (with no middle jitter)
+// ───────────────────────────────────────────────
 
-window.addEventListener('scroll', () => {
-    const header = document.querySelector('.header');
+const header = document.querySelector('.header');
+const gallery = document.querySelector('.gallery-container');
+
+let rafScheduled = false;
+let lastScrollY = window.scrollY || 0;
+let isSnapping = false; // prevent re-trigger during snap
+
+function getGalleryTop() {
+    return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
+}
+
+function updateHeader() {
+    rafScheduled = false;
+
+    if (isSnapping) return;
+
     const scrollY = window.scrollY;
-    
-    // Determine the current state with a buffer zone to prevent flickering
-    // Use different thresholds for scrolling up vs down (hysteresis)
-    let currentState;
-    if (lastState === 'top') {
-        // If we were at top, need to scroll past 70px to collapse
-        currentState = scrollY > 70 ? 'collapsed' : 'top';
-    } else {
-        // If we were collapsed, need to scroll above 30px to expand
-        currentState = scrollY < 30 ? 'top' : 'collapsed';
-    }
-    
-    // Only do something if state actually changed
-    if (currentState !== lastState) {
-        // Add transitioning class only during state change
+    const direction = scrollY > lastScrollY ? 'down' : 'up';
+    lastScrollY = scrollY;
+
+    const galleryTop = getGalleryTop();
+    const headerHeight = header.offsetHeight; // approximate expanded height for calculation
+
+    const threshold = galleryTop - headerHeight; // threshold is top of gallery minus header (adjust if needed)
+
+    const shouldBeOpen = scrollY < threshold;
+
+    const isCurrentlyOpen = header.classList.contains('header-top');
+
+    if (shouldBeOpen !== isCurrentlyOpen) {
+        isSnapping = true;
         header.classList.add('header-transitioning');
-        
-        // Update the header state
-        if (currentState === 'top') {
+
+        if (shouldBeOpen) {
             header.classList.add('header-top');
+            // Snap to top of page (open header)
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         } else {
             header.classList.remove('header-top');
+            // Wait a tiny bit for class change, then snap to gallery top under collapsed header
+            setTimeout(() => {
+                const collapsedHeaderHeight = header.offsetHeight;
+                const target = galleryTop - collapsedHeaderHeight;
+                window.scrollTo({
+                    top: target,
+                    behavior: 'smooth'
+                });
+            }, 50); // small delay to let class apply
         }
-        
-        // Remove transitioning class after transition completes
+
+        // Clean up after transition + snap
         setTimeout(() => {
             header.classList.remove('header-transitioning');
-        }, 300);
-        
-        lastState = currentState;
+            isSnapping = false;
+        }, 400); // adjust to match your transition + snap time (300–500 ms)
+    }
+}
+
+window.addEventListener('scroll', () => {
+    if (!rafScheduled) {
+        rafScheduled = true;
+        requestAnimationFrame(updateHeader);
     }
 });
