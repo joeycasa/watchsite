@@ -250,13 +250,12 @@ function updateLightboxImage() {
 document.addEventListener('DOMContentLoaded', initGallery);
 
 // ───────────────────────────────────────────────
-// Header scroll effect — mobile-friendly fix
+// Mobile-safe header snap
 // ───────────────────────────────────────────────
 
 const header = document.querySelector('.header');
 const gallery = document.querySelector('.gallery-container');
 
-let rafScheduled = false;
 let lastScrollY = window.scrollY || 0;
 let isSnapping = false;
 
@@ -264,55 +263,55 @@ function getGalleryTop() {
   return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
 }
 
+// Detect mobile Safari / mobile browsers
+const isMobile = /iP(ad|hone|ipod)|Android/i.test(navigator.userAgent);
+
 function updateHeader() {
-  rafScheduled = false;
-
-  if (isSnapping) return;
-
   const scrollY = window.scrollY;
-  lastScrollY = scrollY;
-
-  const galleryTop = getGalleryTop();
   const headerHeight = header.offsetHeight;
-
+  const galleryTop = getGalleryTop();
   const threshold = galleryTop - headerHeight;
 
+  const headerOpen = header.classList.contains('header-top');
   const shouldBeOpen = scrollY < threshold;
-  const isCurrentlyOpen = header.classList.contains('header-top');
 
-  if (shouldBeOpen !== isCurrentlyOpen) {
+  if (shouldBeOpen !== headerOpen && !isSnapping) {
     isSnapping = true;
     header.classList.add('header-transitioning');
 
     if (shouldBeOpen) {
       header.classList.add('header-top');
-      // Snap to top safely
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (!isMobile) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Instant snap on mobile
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
     } else {
       header.classList.remove('header-top');
-      // Snap to gallery under collapsed header
-      const collapsedHeaderHeight = header.offsetHeight;
-      const target = galleryTop - collapsedHeaderHeight;
-      window.scrollTo({ top: target, behavior: 'smooth' });
+      const target = galleryTop - header.offsetHeight;
+      if (!isMobile) {
+        window.scrollTo({ top: target, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: target, behavior: 'auto' });
+      }
     }
 
-    // Clean up after smooth scroll
     setTimeout(() => {
       header.classList.remove('header-transitioning');
       isSnapping = false;
-    }, 400); // match your CSS transition
+    }, 400);
   }
+
+  lastScrollY = scrollY;
 }
 
 // Scroll handler
 window.addEventListener('scroll', () => {
-  if (!rafScheduled) {
-    rafScheduled = true;
-    requestAnimationFrame(updateHeader);
-  }
+  requestAnimationFrame(updateHeader);
 });
 
-// Resize handler (optional)
+// Resize handler
 window.addEventListener('resize', () => {
   requestAnimationFrame(updateHeader);
 });
