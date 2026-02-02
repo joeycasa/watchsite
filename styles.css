@@ -473,7 +473,7 @@ body {
 
 @media (max-width: 768px) {
     .logo {
-        font-size: 1.8rem;
+        font-size: 0.5rem;
     }
     
     .gallery-grid {
