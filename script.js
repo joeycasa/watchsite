@@ -258,6 +258,7 @@ const gallery = document.querySelector('.gallery-container');
 
 let lastScrollY = window.scrollY || 0;
 let isSnapping = false;
+let initialGalleryTop = null;
 
 // Detect mobile devices
 const isMobile = /iP(ad|hone|ipod)|Android/i.test(navigator.userAgent);
@@ -266,32 +267,46 @@ function getGalleryTop() {
   return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
 }
 
+// Calculate initial threshold when page loads
+function calculateInitialThreshold() {
+  if (initialGalleryTop === null) {
+    // Temporarily ensure header is in expanded state to get accurate measurement
+    const wasOpen = header.classList.contains('header-top');
+    header.classList.add('header-top');
+    const expandedHeaderHeight = header.offsetHeight;
+    if (!wasOpen) {
+      header.classList.remove('header-top');
+    }
+    
+    // Calculate where gallery starts when header is expanded
+    initialGalleryTop = getGalleryTop();
+    return initialGalleryTop - expandedHeaderHeight;
+  }
+  return initialGalleryTop;
+}
+
 function updateHeader() {
   const scrollY = window.scrollY;
-  const headerHeight = header.offsetHeight;
-  const galleryTop = getGalleryTop();
-  const threshold = galleryTop - headerHeight;
-
-  const headerOpen = header.classList.contains('header-top');
-  const shouldBeOpen = scrollY < threshold;
-
+  
   if (isMobile) {
-    // ── MOBILE: just toggle classes, no snapping ──
-    // Check if we're scrolling up or down
-    const scrollingUp = scrollY < lastScrollY;
+    // ── MOBILE: Use a simple fixed threshold ──
+    const threshold = 100; // Simple fixed value - adjust as needed
     
-    if (scrollingUp && scrollY < threshold) {
-      // Scrolling up and in the header zone - open it
+    if (scrollY <= threshold) {
       header.classList.add('header-top');
       header.classList.remove('header-collapsed');
-    } else if (!scrollingUp && scrollY >= threshold) {
-      // Scrolling down and past the threshold - collapse it
+    } else {
       header.classList.remove('header-top');
       header.classList.add('header-collapsed');
     }
-    // If scrolling down but still in header zone, or scrolling up but past threshold, don't change state
   } else {
     // ── DESKTOP: snapping behavior ──
+    const headerHeight = header.offsetHeight;
+    const galleryTop = getGalleryTop();
+    const threshold = galleryTop - headerHeight;
+    const headerOpen = header.classList.contains('header-top');
+    const shouldBeOpen = scrollY < threshold;
+    
     if (shouldBeOpen !== headerOpen && !isSnapping) {
       isSnapping = true;
       header.classList.add('header-transitioning');
