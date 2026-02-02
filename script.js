@@ -258,31 +258,12 @@ const gallery = document.querySelector('.gallery-container');
 
 let lastScrollY = window.scrollY || 0;
 let isSnapping = false;
-let initialGalleryTop = null;
 
 // Detect mobile devices
 const isMobile = /iP(ad|hone|ipod)|Android/i.test(navigator.userAgent);
 
 function getGalleryTop() {
   return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
-}
-
-// Calculate initial threshold when page loads
-function calculateInitialThreshold() {
-  if (initialGalleryTop === null) {
-    // Temporarily ensure header is in expanded state to get accurate measurement
-    const wasOpen = header.classList.contains('header-top');
-    header.classList.add('header-top');
-    const expandedHeaderHeight = header.offsetHeight;
-    if (!wasOpen) {
-      header.classList.remove('header-top');
-    }
-    
-    // Calculate where gallery starts when header is expanded
-    initialGalleryTop = getGalleryTop();
-    return initialGalleryTop - expandedHeaderHeight;
-  }
-  return initialGalleryTop;
 }
 
 function updateHeader() {
@@ -301,10 +282,12 @@ function updateHeader() {
     }
   } else {
     // ── DESKTOP: snapping behavior ──
-    const headerHeight = header.offsetHeight;
-    const galleryTop = getGalleryTop();
-    const threshold = galleryTop - headerHeight;
     const headerOpen = header.classList.contains('header-top');
+    
+    // Get the current state's header height
+    const currentHeaderHeight = header.offsetHeight;
+    const galleryTop = getGalleryTop();
+    const threshold = galleryTop - currentHeaderHeight;
     const shouldBeOpen = scrollY < threshold;
     
     if (shouldBeOpen !== headerOpen && !isSnapping) {
@@ -312,11 +295,20 @@ function updateHeader() {
       header.classList.add('header-transitioning');
 
       if (shouldBeOpen) {
+        // Opening header - scroll to top
         header.classList.add('header-top');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
+        // Collapsing header - need to account for the new collapsed height
         header.classList.remove('header-top');
-        const target = galleryTop - header.offsetHeight;
+        
+        // Force a reflow to get the new collapsed height
+        const collapsedHeaderHeight = header.offsetHeight;
+        
+        // Calculate target: gallery position minus the collapsed header height
+        const newGalleryTop = gallery.getBoundingClientRect().top + window.scrollY;
+        const target = newGalleryTop - collapsedHeaderHeight;
+        
         window.scrollTo({ top: target, behavior: 'smooth' });
       }
 
