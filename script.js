@@ -47,7 +47,6 @@ const watches = [
             "images/watch4-3.jpg"
         ]
     }
-    // Add more watches as needed
 ];
 
 let currentImageIndices = {};
@@ -82,7 +81,6 @@ function createWatchCard(watch) {
     img.className = 'watch-image';
     img.setAttribute('data-watch-id', watch.id);
     
-    // Navigation arrows (only show if multiple images)
     if (watch.images.length > 1) {
         const prevBtn = document.createElement('button');
         prevBtn.className = 'watch-nav watch-prev';
@@ -103,7 +101,6 @@ function createWatchCard(watch) {
         imageContainer.appendChild(prevBtn);
         imageContainer.appendChild(nextBtn);
         
-        // Image indicators
         const indicators = document.createElement('div');
         indicators.className = 'image-indicator';
         watch.images.forEach((_, index) => {
@@ -129,7 +126,6 @@ function createWatchCard(watch) {
     card.appendChild(imageContainer);
     card.appendChild(info);
     
-    // Click on card opens lightbox
     card.addEventListener('click', (e) => {
         if (!e.target.classList.contains('watch-nav')) {
             openLightbox(watch.id, currentImageIndices[watch.id]);
@@ -144,12 +140,12 @@ function changeImage(watchId, direction) {
     const watch = watches.find(w => w.id === watchId);
     if (!watch) return;
     
-    currentImageIndices[watchId] = (currentImageIndices[watchId] + direction + watch.images.length) % watch.images.length;
+    currentImageIndices[watchId] =
+        (currentImageIndices[watchId] + direction + watch.images.length) % watch.images.length;
     
     const img = document.querySelector(`.watch-image[data-watch-id="${watchId}"]`);
     img.src = watch.images[currentImageIndices[watchId]];
     
-    // Update indicators
     const indicators = document.querySelectorAll(`.indicator-dot[data-watch-id="${watchId}"]`);
     indicators.forEach((dot, index) => {
         dot.classList.toggle('active', index === currentImageIndices[watchId]);
@@ -167,17 +163,12 @@ function initLightbox() {
     prevBtn.addEventListener('click', () => changeLightboxImage(-1));
     nextBtn.addEventListener('click', () => changeLightboxImage(1));
     
-    // Close on background click
     lightbox.addEventListener('click', (e) => {
-        if (e.target === lightbox) {
-            closeLightbox();
-        }
+        if (e.target === lightbox) closeLightbox();
     });
     
-    // Keyboard navigation
     document.addEventListener('keydown', (e) => {
         if (!lightbox.classList.contains('active')) return;
-        
         if (e.key === 'Escape') closeLightbox();
         if (e.key === 'ArrowLeft') changeLightboxImage(-1);
         if (e.key === 'ArrowRight') changeLightboxImage(1);
@@ -204,17 +195,15 @@ function openLightbox(watchId, imageIndex = 0) {
     description.textContent = watch.description;
     price.textContent = watch.price;
     
-    // Create thumbnails
     thumbnails.innerHTML = '';
-    watch.images.forEach((imageSrc, index) => {
+    watch.images.forEach((src, index) => {
         const thumb = document.createElement('img');
-        thumb.src = imageSrc;
-        thumb.alt = `${watch.title} - Image ${index + 1}`;
+        thumb.src = src;
         thumb.className = `lightbox-thumbnail ${index === imageIndex ? 'active' : ''}`;
-        thumb.addEventListener('click', () => {
+        thumb.onclick = () => {
             lightboxCurrentImageIndex = index;
             updateLightboxImage();
-        });
+        };
         thumbnails.appendChild(thumb);
     });
     
@@ -223,30 +212,26 @@ function openLightbox(watchId, imageIndex = 0) {
 }
 
 function closeLightbox() {
-    const lightbox = document.getElementById('lightbox');
-    lightbox.classList.remove('active');
+    document.getElementById('lightbox').classList.remove('active');
     document.body.style.overflow = '';
 }
 
 function changeLightboxImage(direction) {
-    if (!lightboxCurrentWatch) return;
-    
-    lightboxCurrentImageIndex = (lightboxCurrentImageIndex + direction + lightboxCurrentWatch.images.length) % lightboxCurrentWatch.images.length;
+    lightboxCurrentImageIndex =
+        (lightboxCurrentImageIndex + direction + lightboxCurrentWatch.images.length) %
+        lightboxCurrentWatch.images.length;
     updateLightboxImage();
 }
 
 function updateLightboxImage() {
-    const img = document.getElementById('lightboxImage');
-    img.src = lightboxCurrentWatch.images[lightboxCurrentImageIndex];
+    document.getElementById('lightboxImage').src =
+        lightboxCurrentWatch.images[lightboxCurrentImageIndex];
     
-    // Update active thumbnail
-    const thumbnails = document.querySelectorAll('.lightbox-thumbnail');
-    thumbnails.forEach((thumb, index) => {
-        thumb.classList.toggle('active', index === lightboxCurrentImageIndex);
+    document.querySelectorAll('.lightbox-thumbnail').forEach((t, i) => {
+        t.classList.toggle('active', i === lightboxCurrentImageIndex);
     });
 }
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', initGallery);
 
 // ───────────────────────────────────────────────
@@ -256,78 +241,60 @@ document.addEventListener('DOMContentLoaded', initGallery);
 const header = document.querySelector('.header');
 const gallery = document.querySelector('.gallery-container');
 
-let lastScrollY = window.scrollY || 0;
 let isSnapping = false;
-
-// Detect mobile devices
 const isMobile = /iP(ad|hone|ipod)|Android/i.test(navigator.userAgent);
 
-function getGalleryTop() {
-  return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
+function getGalleryTopAbsolute() {
+    return gallery.getBoundingClientRect().top + window.scrollY;
 }
 
 function updateHeader() {
-  const scrollY = window.scrollY;
-  
-  if (isMobile) {
-    // ── MOBILE: Use a simple fixed threshold ──
-    const threshold = 50; // Simple fixed value - adjust as needed
+    const scrollY = window.scrollY;
     
-    if (scrollY <= threshold) {
-      header.classList.add('header-top');
-      header.classList.remove('header-collapsed');
-    } else {
-      header.classList.remove('header-top');
-      header.classList.add('header-collapsed');
+    if (isMobile) {
+        const threshold = 40;
+        header.classList.toggle('header-top', scrollY <= threshold);
+        header.classList.toggle('header-collapsed', scrollY > threshold);
+        return;
     }
-  } else {
-    // ── DESKTOP: snapping behavior ──
-    const headerOpen = header.classList.contains('header-top');
-    
-    // Get the current state's header height
-    const currentHeaderHeight = header.offsetHeight;
-    const galleryTop = getGalleryTop();
-    const threshold = galleryTop - currentHeaderHeight;
-    const shouldBeOpen = scrollY < threshold;
-    
-    if (shouldBeOpen !== headerOpen && !isSnapping) {
-      isSnapping = true;
-      header.classList.add('header-transitioning');
 
-      if (shouldBeOpen) {
-        // Opening header - scroll to top
+    const headerOpen = header.classList.contains('header-top');
+    const headerHeight = header.offsetHeight;
+    const galleryTop = getGalleryTopAbsolute();
+    const shouldBeOpen = scrollY < galleryTop - headerHeight;
+
+    if (shouldBeOpen === headerOpen || isSnapping) return;
+
+    isSnapping = true;
+    header.classList.add('header-transitioning');
+
+    if (shouldBeOpen) {
         header.classList.add('header-top');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        // Collapsing header - need to account for the new collapsed height
-        header.classList.remove('header-top');
-        
-        // Force a reflow to get the new collapsed height
-        const collapsedHeaderHeight = header.offsetHeight;
-        
-        // Calculate target: gallery position minus the collapsed header height
-        const newGalleryTop = gallery.getBoundingClientRect().top + window.scrollY;
-        const target = newGalleryTop - collapsedHeaderHeight;
-        
-        window.scrollTo({ top: target, behavior: 'smooth' });
-      }
+    } else {
+        // 🔧 FIX: lock gallery position BEFORE header collapse
+        const lockedGalleryTop = getGalleryTopAbsolute();
 
-      setTimeout(() => {
+        header.classList.remove('header-top');
+
+        requestAnimationFrame(() => {
+            const collapsedHeight = header.offsetHeight;
+            const target = lockedGalleryTop - collapsedHeight;
+
+            window.scrollTo({ top: target, behavior: 'smooth' });
+        });
+    }
+
+    setTimeout(() => {
         header.classList.remove('header-transitioning');
         isSnapping = false;
-      }, 400); // match your CSS transition duration
-    }
-  }
-
-  lastScrollY = scrollY;
+    }, 400);
 }
 
-// Scroll handler
 window.addEventListener('scroll', () => {
-  requestAnimationFrame(updateHeader);
+    requestAnimationFrame(updateHeader);
 });
 
-// Resize handler
 window.addEventListener('resize', () => {
-  requestAnimationFrame(updateHeader);
+    requestAnimationFrame(updateHeader);
 });
