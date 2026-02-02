@@ -42,12 +42,12 @@ body {
 /* Bio Section */
 .bio {
     text-align: center;
-    margin: 0 auto 2rem auto; /* snug under header */
-    font-family: var(--font-display); /* 'Cormorant Garamond' */
+    margin: 0 auto 2rem auto; 
+    font-family: var(--font-display); 
     font-style: italic;
-    font-weight: 500; /* bolder for readability */
-    font-size: 1.3rem; /* readable size */
-    color: var(--color-text-muted); /* same grey as tagline */
+    font-weight: 500; 
+    font-size: 1.3rem; 
+    color: var(--color-text-muted); 
     line-height: 1.6;
     max-width: 700px;
 }
@@ -64,7 +64,6 @@ body {
     transition: padding 0.3s ease, background 0.3s ease;
 }
 
-/* Add collapsed class for mobile */
 .header-collapsed {
     padding: var(--spacing-sm) 0;
     background: rgba(10, 10, 10, 0.95);
@@ -102,11 +101,11 @@ body {
 
 .tagline {
     text-align: center;
-    font-size: 0.95rem;          /* slightly larger */
-    letter-spacing: 0.15em;      /* slightly tighter, more elegant */
+    font-size: 0.95rem;         
+    letter-spacing: 0.15em;     
     text-transform: uppercase;
     color: var(--color-text-muted);
-    font-weight: 500;            /* bolder for better readability */
+    font-weight: 500;           
     display: none;
     transition: opacity 0.15s ease;
     opacity: 1;
@@ -419,45 +418,23 @@ body {
 
 /* Animations */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes zoomIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 /* Responsive Design */
@@ -472,16 +449,10 @@ body {
 }
 
 @media (max-width: 768px) {
-    .logo {
-        font-size: 2rem;
-    }
-
-    .header-collapsed .logo {
-        font-size: 1.5rem !important; /* bigger than default small size */
-    }
-
+    /* Mobile logo sizing for all header states */
+    .header-collapsed .logo,
     .header.header-top .logo {
-        font-size: 1.5rem; /* optional: override top-header size on mobile */
+        font-size: 2rem; /* adjust as needed visually */
     }
     
     .gallery-grid {
