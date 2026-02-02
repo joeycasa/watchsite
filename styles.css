@@ -449,10 +449,15 @@ body {
 }
 
 @media (max-width: 768px) {
-    /* Mobile logo sizing for all header states */
-    .header-collapsed .logo,
+    /* Collapsed header (small logo) */
+    .header-collapsed .logo {
+        font-size: 1.8rem; /* adjust smaller */
+    }
+
+    /* Open header (larger logo) */
     .header.header-top .logo {
-        font-size: 2rem; /* adjust as needed visually */
+        font-size: 2.5rem; /* adjust bigger */
+        margin-bottom: var(--spacing-xs);
     }
     
     .gallery-grid {
