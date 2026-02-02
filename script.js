@@ -271,7 +271,7 @@ function updateHeader() {
   
   if (isMobile) {
     // ── MOBILE: Use a simple fixed threshold ──
-    const threshold = 65; // Simple fixed value - adjust as needed
+    const threshold = 50; // Simple fixed value - adjust as needed
     
     if (scrollY <= threshold) {
       header.classList.add('header-top');
