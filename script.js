@@ -250,7 +250,7 @@ function updateLightboxImage() {
 document.addEventListener('DOMContentLoaded', initGallery);
 
 // ───────────────────────────────────────────────
-// Header snap — Desktop snaps, Mobile free-scroll
+// Header snap – Desktop snaps, Mobile free-scroll
 // ───────────────────────────────────────────────
 
 const header = document.querySelector('.header');
@@ -258,6 +258,7 @@ const gallery = document.querySelector('.gallery-container');
 
 let lastScrollY = window.scrollY || 0;
 let isSnapping = false;
+let scrollTimeout = null;
 
 // Detect mobile devices
 const isMobile = /iP(ad|hone|ipod)|Android/i.test(navigator.userAgent);
@@ -277,32 +278,51 @@ function updateHeader() {
 
   if (isMobile) {
     // ── MOBILE: just toggle classes, no snapping ──
-    if (shouldBeOpen) {
+    // Add a small buffer zone at the top to prevent flickering
+    const topBuffer = 50; // pixels from top where header should stay open
+    
+    if (scrollY <= topBuffer) {
       header.classList.add('header-top');
       header.classList.remove('header-collapsed');
-    } else {
+    } else if (scrollY > threshold) {
       header.classList.remove('header-top');
       header.classList.add('header-collapsed');
     }
   } else {
     // ── DESKTOP: snapping behavior ──
+    // Only snap if user has stopped scrolling
     if (shouldBeOpen !== headerOpen && !isSnapping) {
-      isSnapping = true;
-      header.classList.add('header-transitioning');
-
-      if (shouldBeOpen) {
-        header.classList.add('header-top');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        header.classList.remove('header-top');
-        const target = galleryTop - header.offsetHeight;
-        window.scrollTo({ top: target, behavior: 'smooth' });
+      // Clear any existing timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
       }
+      
+      // Wait for user to stop scrolling before snapping
+      scrollTimeout = setTimeout(() => {
+        const currentScrollY = window.scrollY;
+        const currentThreshold = getGalleryTop() - header.offsetHeight;
+        const currentShouldBeOpen = currentScrollY < currentThreshold;
+        
+        // Double-check the state hasn't changed during the timeout
+        if (currentShouldBeOpen !== header.classList.contains('header-top')) {
+          isSnapping = true;
+          header.classList.add('header-transitioning');
 
-      setTimeout(() => {
-        header.classList.remove('header-transitioning');
-        isSnapping = false;
-      }, 400); // match your CSS transition duration
+          if (currentShouldBeOpen) {
+            header.classList.add('header-top');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            header.classList.remove('header-top');
+            const target = getGalleryTop() - header.offsetHeight;
+            window.scrollTo({ top: target, behavior: 'smooth' });
+          }
+
+          setTimeout(() => {
+            header.classList.remove('header-transitioning');
+            isSnapping = false;
+          }, 400);
+        }
+      }, 150); // Wait 150ms after user stops scrolling
     }
   }
 
@@ -311,7 +331,9 @@ function updateHeader() {
 
 // Scroll handler
 window.addEventListener('scroll', () => {
-  requestAnimationFrame(updateHeader);
+  if (!isSnapping) {
+    requestAnimationFrame(updateHeader);
+  }
 });
 
 // Resize handler
