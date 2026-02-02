@@ -258,7 +258,6 @@ const gallery = document.querySelector('.gallery-container');
 
 let lastScrollY = window.scrollY || 0;
 let isSnapping = false;
-let collapsedHeaderHeight = null;
 
 // Detect mobile devices
 const isMobile = /iP(ad|hone|ipod)|Android/i.test(navigator.userAgent);
@@ -285,14 +284,10 @@ function updateHeader() {
     // ── DESKTOP: snapping behavior ──
     const headerOpen = header.classList.contains('header-top');
     
-    if (collapsedHeaderHeight === null) {
-      header.classList.remove('header-top');
-      collapsedHeaderHeight = header.offsetHeight;
-      header.classList.add('header-top');
-    }
-    
+    // Get the current state's header height
+    const currentHeaderHeight = header.offsetHeight;
     const galleryTop = getGalleryTop();
-    const threshold = galleryTop - collapsedHeaderHeight;
+    const threshold = galleryTop - currentHeaderHeight;
     const shouldBeOpen = scrollY < threshold;
     
     if (shouldBeOpen !== headerOpen && !isSnapping) {
@@ -304,10 +299,16 @@ function updateHeader() {
         header.classList.add('header-top');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        // Collapsing header - snap exactly to gallery top
+        // Collapsing header - need to account for the new collapsed height
         header.classList.remove('header-top');
         
-        const target = gallery.offsetTop - collapsedHeaderHeight;
+        // Force a reflow to get the new collapsed height
+        const collapsedHeaderHeight = header.offsetHeight;
+        
+        // Calculate target: gallery position minus the collapsed header height
+        const newGalleryTop = gallery.getBoundingClientRect().top + window.scrollY;
+        const target = newGalleryTop - collapsedHeaderHeight;
+        
         window.scrollTo({ top: target, behavior: 'smooth' });
       }
 
