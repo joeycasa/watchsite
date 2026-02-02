@@ -449,15 +449,14 @@ body {
 }
 
 @media (max-width: 768px) {
-    /* Collapsed header (small logo) */
-    .header-collapsed .logo {
-        font-size: 1.8rem; /* adjust smaller */
+    /* Collapsed mobile header */
+    .header.header-collapsed .logo {
+        font-size: 1.8rem !important;
     }
 
-    /* Open header (larger logo) */
-    .header.header-top .logo {
-        font-size: 2.5rem; /* adjust bigger */
-        margin-bottom: var(--spacing-xs);
+    /* Open mobile header */
+    .header.header-top:not(.header-collapsed) .logo {
+        font-size: 2.5rem !important;
     }
     
     .gallery-grid {
