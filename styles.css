@@ -475,6 +475,14 @@ body {
     .logo {
         font-size: 2rem;
     }
+
+    .header-collapsed .logo {
+        font-size: 2.5rem !important; /* bigger than default small size */
+    }
+
+    .header.header-top .logo {
+        font-size: 2.5rem; /* optional: override top-header size on mobile */
+    }
     
     .gallery-grid {
         grid-template-columns: 1fr;
